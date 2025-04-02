@@ -4,7 +4,6 @@ import { Box, Button, TextField, Typography, Snackbar, Alert } from '@mui/materi
 export const Calculator = () => {
   // State variables for inputs, result, and error handling
   const [input, setInput] = useState<string>(''); // Single input for simplicity
-  const [result, setResult] = useState<number | string>('');
   const [error, setError] = useState<string | null>(null);
 
   // Function to handle button clicks for digits and operations
@@ -24,7 +23,7 @@ export const Calculator = () => {
         return;
       }
 
-      setResult(evaluatedResult);
+      setInput(evaluatedResult.toString()); // Set the result in the input field
     } catch (err) {
       setError('Invalid input');
     }
@@ -46,11 +45,11 @@ export const Calculator = () => {
           if (num < 0) {
             setError('Square root of negative numbers is not allowed');
           } else {
-            setResult(Math.sqrt(num));
+            setInput(Math.sqrt(num).toString()); // Set the result in the input field
           }
           break;
         case 'modulus':
-          setResult(num % 2); // Example modulus operation
+          setInput((num % 2).toString()); // Example modulus operation
           break;
         default:
           setError('Invalid operation');
@@ -63,7 +62,6 @@ export const Calculator = () => {
   // Function to clear the input and result
   const handleClear = () => {
     setInput('');
-    setResult('');
     setError(null);
   };
 
@@ -101,6 +99,7 @@ export const Calculator = () => {
         onChange={(e) => setInput(e.target.value)}
         sx={{
           backgroundColor: '#D2B48C',
+          border: '1px solid #8B4513',
         }}
       />
 
@@ -147,11 +146,6 @@ export const Calculator = () => {
           Clear
         </Button>
       </Box>
-
-      {/* Display the result */}
-      <Typography variant="h6" sx={{ mt: 3 }}>
-        Result: {result}
-      </Typography>
 
       {/* Snackbar for error messages */}
       <Snackbar open={!!error} autoHideDuration={4000} onClose={handleCloseError}>
