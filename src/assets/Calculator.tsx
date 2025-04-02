@@ -1,59 +1,70 @@
-import { useState } from 'react';
+import  { useState } from 'react';
 import { Box, Button, TextField, Typography, Snackbar, Alert } from '@mui/material';
 
 export const Calculator = () => {
   // State variables for inputs, result, and error handling
-  const [input1, setInput1] = useState<string>('');
-  const [input2, setInput2] = useState<string>('');
+  const [input, setInput] = useState<string>(''); // Single input for simplicity
   const [result, setResult] = useState<number | string>('');
   const [error, setError] = useState<string | null>(null);
 
-  // Function to handle calculations based on the selected operation
-  const handleCalculate = (operation: string) => {
-    const num1 = parseFloat(input1);
-    const num2 = parseFloat(input2);
+  // Function to handle button clicks for digits and operations
+  const handleButtonClick = (value: string) => {
+    setInput((prev) => prev + value);
+  };
 
-    // Validate inputs to ensure they are numbers
-    if (isNaN(num1) || isNaN(num2)) {
-      setError('Only numbers are allowed');
-      return;
-    }
+  // Function to handle calculations
+  const handleCalculate = () => {
+    try {
+      // Evaluate the input string as a mathematical expression
+      const evaluatedResult = eval(input);
 
-    // Perform the selected operation
-    switch (operation) {
-      case 'add':
-        setResult(num1 + num2);
-        break;
-      case 'subtract':
-        setResult(num1 - num2);
-        break;
-      case 'multiply':
-        setResult(num1 * num2);
-        break;
-      case 'divide':
-        if (num2 === 0) {
-          setError('Division by zero is not allowed');
-        } else {
-          setResult(num1 / num2);
-        }
-        break;
-      case 'modulus':
-        if (num2 === 0) {
-          setError('Division by zero is not allowed');
-        } else {
-          setResult(num1 % num2);
-        }
-        break;
-      case 'sqrt':
-        if (num1 < 0) {
-          setError('Square root of negative numbers is not allowed');
-        } else {
-          setResult(Math.sqrt(num1));
-        }
-        break;
-      default:
-        setError('Invalid operation');
+      // Check for division by zero
+      if (input.includes('/0')) {
+        setError('Division by zero is not allowed');
+        return;
+      }
+
+      setResult(evaluatedResult);
+    } catch (err) {
+      setError('Invalid input');
     }
+  };
+
+  // Function to handle special operations
+  const handleSpecialOperation = (operation: string) => {
+    try {
+      const num = parseFloat(input);
+
+      // Validate input to ensure it's a number
+      if (isNaN(num)) {
+        setError('Only numbers are allowed');
+        return;
+      }
+
+      switch (operation) {
+        case 'sqrt':
+          if (num < 0) {
+            setError('Square root of negative numbers is not allowed');
+          } else {
+            setResult(Math.sqrt(num));
+          }
+          break;
+        case 'modulus':
+          setResult(num % 2); // Example modulus operation
+          break;
+        default:
+          setError('Invalid operation');
+      }
+    } catch (err) {
+      setError('An error occurred');
+    }
+  };
+
+  // Function to clear the input and result
+  const handleClear = () => {
+    setInput('');
+    setResult('');
+    setError(null);
   };
 
   // Function to close the error Snackbar
@@ -62,15 +73,14 @@ export const Calculator = () => {
   };
 
   return (
-   
     <Box
       sx={{
-        maxWidth: 600, // Increased width
-        minHeight: 500, // Increased height
+        maxWidth: 400,
+        minHeight: 500,
         margin: 'auto',
         textAlign: 'center',
         mt: 5,
-        backgroundColor: '#F5F5DC', // Beige background
+        backgroundColor: '#F5F5DC',
         padding: 3,
         borderRadius: 2,
         boxShadow: 3,
@@ -81,49 +91,60 @@ export const Calculator = () => {
         Calculator
       </Typography>
 
-      {/* Input fields for numbers */}
+      {/* Input field */}
       <TextField
-        label="Enter first number"
+        label="Enter expression"
         variant="outlined"
         fullWidth
         margin="normal"
-        value={input1}
-        onChange={(e) => setInput1(e.target.value)}
+        value={input}
+        onChange={(e) => setInput(e.target.value)}
         sx={{
-          backgroundColor: '#D2B48C', // Tan color for input fields
-        }}
-      />
-      <TextField
-        label="Enter second number"
-        variant="outlined"
-        fullWidth
-        margin="normal"
-        value={input2}
-        onChange={(e) => setInput2(e.target.value)}
-        sx={{
-          backgroundColor: '#D2B48C', // Tan color for input fields
+          backgroundColor: '#D2B48C',
         }}
       />
 
-      {/* Buttons for operations */}
-      <Box sx={{ display: 'flex', justifyContent: 'space-between', flexWrap: 'wrap', gap: 1, mt: 2 }}>
-        <Button variant="contained" onClick={() => handleCalculate('add')}>
-          + Add
+      {/* Buttons for digits */}
+      <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 1, justifyContent: 'center', mt: 2 }}>
+        {[...Array(10).keys()].map((digit) => (
+          <Button
+            key={digit}
+            variant="contained"
+            onClick={() => handleButtonClick(digit.toString())}
+            sx={{ width: 60, height: 60 }}
+          >
+            {digit}
+          </Button>
+        ))}
+      </Box>
+
+      {/* Buttons for arithmetic operations */}
+      <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 1, justifyContent: 'center', mt: 2 }}>
+        {['+', '-', '*', '/'].map((op) => (
+          <Button
+            key={op}
+            variant="contained"
+            onClick={() => handleButtonClick(op)}
+            sx={{ width: 60, height: 60 }}
+          >
+            {op}
+          </Button>
+        ))}
+        <Button variant="contained" onClick={handleCalculate} sx={{ width: 60, height: 60 }}>
+          =
         </Button>
-        <Button variant="contained" onClick={() => handleCalculate('subtract')}>
-          - Subtract
+      </Box>
+
+      {/* Buttons for special operations */}
+      <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 1, justifyContent: 'center', mt: 2 }}>
+        <Button variant="contained" onClick={() => handleSpecialOperation('sqrt')} sx={{ width: 120 }}>
+          √ Square Root
         </Button>
-        <Button variant="contained" onClick={() => handleCalculate('multiply')}>
-          * Multiply
+        <Button variant="contained" onClick={() => handleSpecialOperation('modulus')} sx={{ width: 120 }}>
+          % Modulus
         </Button>
-        <Button variant="contained" onClick={() => handleCalculate('divide')}>
-          / Divide
-        </Button>
-        <Button variant="contained" onClick={() => handleCalculate('modulus')}>
-          Modulus %
-        </Button>
-        <Button variant="contained" onClick={() => handleCalculate('sqrt')}>
-          Square Root √
+        <Button variant="contained" onClick={handleClear} sx={{ width: 120 }}>
+          Clear
         </Button>
       </Box>
 
